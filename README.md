@@ -2,6 +2,8 @@
 
 This React application allows users to upload and view CSV files in a user-friendly interface. It features a drag-and-drop upload area, a data table for displaying the CSV contents, and responsive notifications.
 
+The app is available online at https://uploado.vercel.app
+
 ## Features
 
 1. **CSV File Upload**:
@@ -71,7 +73,7 @@ A component for displaying the CSV data. Features include:
 
 ## Usage
 
-1. Open the application in a web browser
+1. Open the application in a web browser or visit https://uploado.vercel.app
 2. Drag and drop a CSV file (up to 5MB) onto the upload area, or click to select a file
 3. View the uploaded data in the table
 4. Sort columns by clicking on the column headers
