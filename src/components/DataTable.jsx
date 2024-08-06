@@ -7,6 +7,7 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  Tooltip,
 } from "@mui/material";
 import {
   flexRender,
@@ -16,9 +17,18 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import PropTypes from "prop-types";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 function DataTable({ data }) {
+  const [columnTypes, setColumnTypes] = useState({});
+
+  const detectColumnType = (columnKey) => {
+    const sampleSize = Math.min(100, data.length);
+    const sample = data.slice(0, sampleSize);
+    const isNumeric = sample.every((row) => !isNaN(row[columnKey]));
+    return isNumeric ? "numeric" : "text";
+  };
+
   const columns = useMemo(
     () =>
       data[0]
@@ -55,6 +65,13 @@ function DataTable({ data }) {
         : undefined,
   });
 
+  const handleColumnHover = (columnKey) => {
+    if (!columnTypes[columnKey]) {
+      const type = detectColumnType(columnKey);
+      setColumnTypes((prev) => ({ ...prev, [columnKey]: type }));
+    }
+  };
+
   return (
     <Box sx={{ boxShadow: 3, borderRadius: 2 }}>
       <TableContainer
@@ -80,49 +97,59 @@ function DataTable({ data }) {
                 style={{ display: "flex", width: "100%" }}
               >
                 {headerGroup.headers.map((header) => (
-                  <TableCell
+                  <Tooltip
                     key={header.id}
-                    style={{
-                      display: "flex",
-                      width: header.getSize(),
-                      fontWeight: "bold",
-                      backgroundColor: "#f5f5f5",
-                      position: "relative",
-                    }}
+                    title={
+                      columnTypes[header.column.id]
+                        ? `Type: ${columnTypes[header.column.id]}`
+                        : "Hover to detect type"
+                    }
+                    arrow
                   >
-                    {header.isPlaceholder ? null : (
-                      <>
-                        <TableSortLabel
-                          active={header.column.getIsSorted() !== false}
-                          direction={header.column.getIsSorted() || "asc"}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                        </TableSortLabel>
-                        <div
-                          onMouseDown={header.getResizeHandler()}
-                          onTouchStart={header.getResizeHandler()}
-                          className={`resizer ${
-                            header.column.getIsResizing() ? "isResizing" : ""
-                          }`}
-                          style={{
-                            position: "absolute",
-                            right: 0,
-                            top: 0,
-                            height: "100%",
-                            width: "2px",
-                            background: "rgba(0,0,0,0.2)",
-                            cursor: "col-resize",
-                            userSelect: "none",
-                            touchAction: "none",
-                          }}
-                        />
-                      </>
-                    )}
-                  </TableCell>
+                    <TableCell
+                      style={{
+                        display: "flex",
+                        width: header.getSize(),
+                        fontWeight: "bold",
+                        backgroundColor: "#f5f5f5",
+                        position: "relative",
+                      }}
+                      onMouseEnter={() => handleColumnHover(header.column.id)}
+                    >
+                      {header.isPlaceholder ? null : (
+                        <>
+                          <TableSortLabel
+                            active={header.column.getIsSorted() !== false}
+                            direction={header.column.getIsSorted() || "asc"}
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                          </TableSortLabel>
+                          <div
+                            onMouseDown={header.getResizeHandler()}
+                            onTouchStart={header.getResizeHandler()}
+                            className={`resizer ${
+                              header.column.getIsResizing() ? "isResizing" : ""
+                            }`}
+                            style={{
+                              position: "absolute",
+                              right: 0,
+                              top: 0,
+                              height: "100%",
+                              width: "2px",
+                              background: "rgba(0,0,0,0.2)",
+                              cursor: "col-resize",
+                              userSelect: "none",
+                              touchAction: "none",
+                            }}
+                          />
+                        </>
+                      )}
+                    </TableCell>
+                  </Tooltip>
                 ))}
               </TableRow>
             ))}

@@ -12,8 +12,10 @@ This React application allows users to upload and view CSV files in a user-frien
 
 2. **Data Visualization**:
 
-   - Displays uploaded CSV data in a sortable and resizable table
+   - Displays uploaded CSV data in a sortable, resizable, and virtualized table
    - Virtual scrolling for efficient rendering of large datasets
+   - Column type detection (numeric or text)
+   - Tooltips showing column types
 
 3. **User Interface**:
 
@@ -45,9 +47,12 @@ A reusable component for the file upload interface. It provides:
 
 A component for displaying the CSV data. Features include:
 
-- Sortable columns
-- Resizable columns
+- Sortable columns with click-to-sort functionality
+- Resizable columns with drag handles
 - Virtual scrolling for performance optimization
+- Automatic column type detection (numeric or text)
+- Tooltips displaying column types on hover
+- Fixed header for easy navigation
 
 ## Libraries Used
 
@@ -69,7 +74,10 @@ A component for displaying the CSV data. Features include:
 1. Open the application in a web browser
 2. Drag and drop a CSV file (up to 5MB) onto the upload area, or click to select a file
 3. View the uploaded data in the table
-4. Sort and resize columns as needed
-5. Use the "Reset and Upload New File" button to upload a different file
+4. Sort columns by clicking on the column headers
+5. Resize columns by dragging the column edges
+6. Hover over column headers to see detected column types
+7. Scroll through large datasets efficiently with virtual scrolling
+8. Use the "Reset and Upload New File" button to upload a different file
 
 Enjoy exploring your CSV data with Glimpse CSV File Uploader and Viewer!
