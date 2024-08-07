@@ -17,25 +17,28 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import PropTypes from "prop-types";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 function DataTable({ data }) {
   const [columnTypes, setColumnTypes] = useState({});
 
-  const detectColumnType = (columnKey) => {
-    const sampleSize = Math.min(100, data.length);
-    const sample = data.slice(0, sampleSize);
-    const isNumeric = sample.every((row) => !isNaN(row[columnKey]));
-    return isNumeric ? "numeric" : "text";
-  };
+  const detectColumnType = useCallback(
+    (columnKey) => {
+      const sampleSize = Math.min(100, data.length);
+      const sample = data.slice(0, sampleSize);
+      const isNumeric = sample.every((row) => !isNaN(row[columnKey]));
+      return isNumeric ? "numeric" : "text";
+    },
+    [data]
+  );
 
   const columns = useMemo(
     () =>
       data[0]
         ? Object.keys(data[0]).map((key, index) => ({
             id: key || `column_${index}`,
-            header: key || `Column ${index + 1}`,
-            accessorKey: key,
+            header: key,
+            accessorFn: (row) => row[key] ?? "",
             size: 150,
           }))
         : [],
@@ -57,21 +60,45 @@ function DataTable({ data }) {
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => 35,
-    overscan: 5,
-    measureElement:
-      typeof window !== "undefined" &&
-      navigator.userAgent.indexOf("Firefox") === -1
-        ? (element) => element?.getBoundingClientRect().height
-        : undefined,
+    estimateSize: useCallback(() => 53, []),
+    overscan: 20,
   });
 
-  const handleColumnHover = (columnKey) => {
-    if (!columnTypes[columnKey]) {
-      const type = detectColumnType(columnKey);
-      setColumnTypes((prev) => ({ ...prev, [columnKey]: type }));
-    }
-  };
+  const handleColumnHover = useCallback(
+    (columnKey) => {
+      if (!columnTypes[columnKey]) {
+        const type = detectColumnType(columnKey);
+        setColumnTypes((prev) => ({ ...prev, [columnKey]: type }));
+      }
+    },
+    [columnTypes, detectColumnType]
+  );
+
+  const renderCell = useCallback(
+    (cell) => (
+      <TableCell
+        key={cell.id}
+        style={{
+          display: "flex",
+          width: cell.column.getSize(),
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <div
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            width: "100%",
+          }}
+        >
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </div>
+      </TableCell>
+    ),
+    []
+  );
 
   return (
     <Box sx={{ boxShadow: 3, borderRadius: 2 }}>
@@ -176,31 +203,7 @@ function DataTable({ data }) {
                     width: "100%",
                   }}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      style={{
-                        display: "flex",
-                        width: cell.column.getSize(),
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      <div
-                        style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          width: "100%",
-                        }}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </div>
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map(renderCell)}
                 </TableRow>
               );
             })}
