@@ -32,8 +32,9 @@ function DataTable({ data }) {
   const columns = useMemo(
     () =>
       data[0]
-        ? Object.keys(data[0]).map((key) => ({
-            header: key,
+        ? Object.keys(data[0]).map((key, index) => ({
+            id: key || `column_${index}`,
+            header: key || `Column ${index + 1}`,
             accessorKey: key,
             size: 150,
           }))
